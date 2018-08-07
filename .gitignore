@@ -33,6 +33,7 @@ target/
 .settings/
 .project
 .classpatch
+.classpath
 
 #idea
 .idea/
