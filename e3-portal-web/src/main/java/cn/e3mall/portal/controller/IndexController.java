@@ -1,12 +1,14 @@
 package cn.e3mall.portal.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import cn.e3mall.common.pojo.EasyUIDataGridResult;
+import cn.e3mall.pojo.TbContent;
 import cn.e3mall.service.ContentService;
 
 /**
@@ -32,8 +34,8 @@ public class IndexController {
 	 */
 	@RequestMapping("/index")
 	public String showIndex(Model model) {
-		EasyUIDataGridResult page = contentService.getContentListByCategoryId(INDEX_PAGE_BANNER_CONTENT_ID, 1, 20);
-		model.addAttribute("ad1List", page.getRows());
+		List<TbContent> list = contentService.getContentsByCategoryId(INDEX_PAGE_BANNER_CONTENT_ID);
+		model.addAttribute("ad1List", list);
 		return "index";
 	}
 }

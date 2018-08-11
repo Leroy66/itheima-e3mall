@@ -14,7 +14,7 @@ public class JedisTest {
 
 	/**
 	 * 浪费资源
-	 */
+	 *//*
 	@Test
 	public void testJedis() {
 		Jedis jedis = new Jedis("127.0.0.1", 6379);
@@ -22,9 +22,9 @@ public class JedisTest {
 		String s = jedis.get("set1");
 		System.out.println(s);
 		jedis.close();
-	}
+	}*/
 
-	@Test
+	/*@Test
 	public void testJedisPool() {
 		JedisPool pool = new JedisPool("127.0.0.1", 6379);
 		Jedis jedis = pool.getResource();
@@ -32,12 +32,12 @@ public class JedisTest {
 		System.out.println(s + "-----------");
 		jedis.close();
 		pool.close();
-	}
+	}*/
 
 	/**
 	 * 集群测试---需要先配置好集群才行，下面端口未开放，不能运行
 	 */
-	@Test
+/*	@Test
 	public void testJedisCluster() {
 		Set<HostAndPort> nodes = new HashSet<>();
 		nodes.add(new HostAndPort("127.0.0.1", 7001));
@@ -50,5 +50,5 @@ public class JedisTest {
 		System.out.println(s);
 		jc.close();
 	}
-
+*/
 }

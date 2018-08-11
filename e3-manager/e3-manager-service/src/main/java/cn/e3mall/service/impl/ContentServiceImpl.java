@@ -57,6 +57,11 @@ public class ContentServiceImpl implements ContentService {
 		content.setCreated(new Date());
 		content.setUpdated(new Date());
 		tbContentMapper.insert(content);
+		try {
+			jedisClient.hdel("CONTENT_LIST_REDIS_HASHSET_KEY", content.getCategoryId().toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return E3Result.ok();
 	}
 
@@ -71,6 +76,12 @@ public class ContentServiceImpl implements ContentService {
 		}
 		content.setUpdated(new Date());
 		tbContentMapper.updateByPrimaryKey(content);
+
+		try {
+			jedisClient.hdel("CONTENT_LIST_REDIS_HASHSET_KEY", content.getCategoryId().toString());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		return E3Result.ok();
 	}
 
@@ -81,14 +92,22 @@ public class ContentServiceImpl implements ContentService {
 		TbContentExample example = new TbContentExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andIdIn(idList);
-		tbContentMapper.deleteByExample(example);
+		List<TbContent> list = tbContentMapper.selectByExample(example);
+		for (TbContent tbContent : list) {
+			tbContentMapper.deleteByPrimaryKey(tbContent.getId());
+			try {// 更新redis
+				jedisClient.hdel("CONTENT_LIST_REDIS_HASHSET_KEY", tbContent.getCategoryId().toString());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 		return E3Result.ok();
 	}
 
 	@Override
 	public List<TbContent> getContentsByCategoryId(Long categoryId) {
 
-		try {
+		try {// 去redis缓存里读取数据
 			String redisString = jedisClient.hget("CONTENT_LIST_REDIS_HASHSET_KEY", categoryId.toString());
 			List<TbContent> redisList = JsonUtils.jsonToList(redisString, TbContent.class);
 			if (CollectionUtils.isNotEmpty(redisList)) {
@@ -104,7 +123,7 @@ public class ContentServiceImpl implements ContentService {
 		criteria.andCategoryIdEqualTo(categoryId);
 		List<TbContent> list = tbContentMapper.selectByExample(example);
 
-		try {
+		try {// 去redis 写入缓存数据
 			jedisClient.hset("CONTENT_LIST_REDIS_HASHSET_KEY", categoryId.toString(), JsonUtils.objectToJson(list));
 		} catch (Exception e) {
 			e.printStackTrace();

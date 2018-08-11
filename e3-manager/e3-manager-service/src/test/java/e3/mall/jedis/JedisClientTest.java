@@ -8,7 +8,7 @@ import cn.e3mall.common.jedis.JedisClient;
 
 public class JedisClientTest {
 
-	@Test
+	/*@Test
 	public void testJedisPool() {
 		ApplicationContext applicationContext = new ClassPathXmlApplicationContext(
 				"classpath:spring/applicationContext-redis.xml");
@@ -16,6 +16,6 @@ public class JedisClientTest {
 		jedisClient.set("zzzzz", "yyy");
 		String s = jedisClient.get("zzzzz");
 		System.out.println(s + "-----------");
-	}
+	}*/
 
 }
