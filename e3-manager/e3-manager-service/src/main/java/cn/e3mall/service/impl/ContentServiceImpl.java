@@ -6,13 +6,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.dubbo.common.utils.CollectionUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 
+import cn.e3mall.common.jedis.JedisClient;
 import cn.e3mall.common.pojo.EasyUIDataGridResult;
 import cn.e3mall.common.utils.E3Result;
+import cn.e3mall.common.utils.JsonUtils;
 import cn.e3mall.mapper.TbContentMapper;
 import cn.e3mall.pojo.TbContent;
 import cn.e3mall.pojo.TbContentExample;
@@ -22,9 +26,16 @@ import cn.e3mall.service.ContentService;
 @Service
 public class ContentServiceImpl implements ContentService {
 
+	@Value("${CONTENT_LIST_REDIS_HASHSET_KEY}")
+	private String CONTENT_LIST_REDIS_HASHSET_KEY;
 	@Autowired
 	private TbContentMapper tbContentMapper;
+	@Autowired
+	private JedisClient jedisClient;
 
+	/**
+	 * 后台使用
+	 */
 	@Override
 	public EasyUIDataGridResult getContentListByCategoryId(Long categoryId, Integer pn, Integer ps) {
 		EasyUIDataGridResult result = new EasyUIDataGridResult();
@@ -72,6 +83,34 @@ public class ContentServiceImpl implements ContentService {
 		criteria.andIdIn(idList);
 		tbContentMapper.deleteByExample(example);
 		return E3Result.ok();
+	}
+
+	@Override
+	public List<TbContent> getContentsByCategoryId(Long categoryId) {
+
+		try {
+			String redisString = jedisClient.hget("CONTENT_LIST_REDIS_HASHSET_KEY", categoryId.toString());
+			List<TbContent> redisList = JsonUtils.jsonToList(redisString, TbContent.class);
+			if (CollectionUtils.isNotEmpty(redisList)) {
+				return redisList;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println(JsonUtils.objectToJson(e));
+		}
+
+		TbContentExample example = new TbContentExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andCategoryIdEqualTo(categoryId);
+		List<TbContent> list = tbContentMapper.selectByExample(example);
+
+		try {
+			jedisClient.hset("CONTENT_LIST_REDIS_HASHSET_KEY", categoryId.toString(), JsonUtils.objectToJson(list));
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println(JsonUtils.objectToJson(e));
+		}
+		return list;
 	}
 
 }
