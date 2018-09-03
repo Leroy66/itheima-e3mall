@@ -4,6 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import redis.clients.jedis.JedisCluster;
 
+/**
+ * 集群连接
+ * @author leroy
+ *
+ */
 public class JedisClientCluster implements JedisClient {
 
 	@Autowired

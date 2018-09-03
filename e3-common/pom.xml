@@ -91,6 +91,17 @@
 			<groupId>redis.clients</groupId>
 			<artifactId>jedis</artifactId>
 		</dependency>
+		<!-- 音频转换 -->
+		<!-- https://mvnrepository.com/artifact/ws.schild/jave-core -->
+        <dependency>
+            <groupId>ws.schild</groupId>
+            <artifactId>jave-core</artifactId>
+        </dependency>
+        <!-- 七牛 -->
+        <dependency>
+		  <groupId>com.qiniu</groupId>
+		  <artifactId>qiniu-java-sdk</artifactId>
+		</dependency>
 		
 	</dependencies>
 </project>

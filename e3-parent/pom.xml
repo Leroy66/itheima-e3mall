@@ -35,6 +35,9 @@
 		<activemq.version>5.11.2</activemq.version>
 		<freemarker.version>2.3.23</freemarker.version>
 		<quartz.version>2.2.2</quartz.version>
+		<quartz.version>2.2.2</quartz.version>
+		<schild.version>2.4.3</schild.version>
+		<qiniu.version>[7.2.0, 7.2.99]</qiniu.version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -221,6 +224,21 @@
 				<groupId>org.freemarker</groupId>
 				<artifactId>freemarker</artifactId>
 				<version>${freemarker.version}</version>
+			</dependency>
+			
+			<!-- 音频转换 -->
+			<!-- https://mvnrepository.com/artifact/ws.schild/jave-core -->
+	        <dependency>
+	            <groupId>ws.schild</groupId>
+	            <artifactId>jave-core</artifactId>
+	            <version>${schild.version}</version>
+	        </dependency>
+	        
+	        <!-- 七牛 -->
+	        <dependency>
+			  <groupId>com.qiniu</groupId>
+			  <artifactId>qiniu-java-sdk</artifactId>
+			  <version>${qiniu.version}</version>
 			</dependency>
 
 		</dependencies>

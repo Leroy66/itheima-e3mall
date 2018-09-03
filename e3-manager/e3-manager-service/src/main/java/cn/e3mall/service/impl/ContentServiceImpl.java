@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,8 @@ import cn.e3mall.service.ContentService;
 
 @Service
 public class ContentServiceImpl implements ContentService {
+
+	private final static Logger logger = LoggerFactory.getLogger(ContentServiceImpl.class);
 
 	@Value("${CONTENT_LIST_REDIS_HASHSET_KEY}")
 	private String CONTENT_LIST_REDIS_HASHSET_KEY;
@@ -58,7 +62,7 @@ public class ContentServiceImpl implements ContentService {
 		content.setUpdated(new Date());
 		tbContentMapper.insert(content);
 		try {
-			jedisClient.hdel("CONTENT_LIST_REDIS_HASHSET_KEY", content.getCategoryId().toString());
+			jedisClient.hdel(CONTENT_LIST_REDIS_HASHSET_KEY, content.getCategoryId().toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -78,7 +82,7 @@ public class ContentServiceImpl implements ContentService {
 		tbContentMapper.updateByPrimaryKey(content);
 
 		try {
-			jedisClient.hdel("CONTENT_LIST_REDIS_HASHSET_KEY", content.getCategoryId().toString());
+			jedisClient.hdel(CONTENT_LIST_REDIS_HASHSET_KEY, content.getCategoryId().toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -96,7 +100,7 @@ public class ContentServiceImpl implements ContentService {
 		for (TbContent tbContent : list) {
 			tbContentMapper.deleteByPrimaryKey(tbContent.getId());
 			try {// 更新redis
-				jedisClient.hdel("CONTENT_LIST_REDIS_HASHSET_KEY", tbContent.getCategoryId().toString());
+				jedisClient.hdel(CONTENT_LIST_REDIS_HASHSET_KEY, tbContent.getCategoryId().toString());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -104,27 +108,31 @@ public class ContentServiceImpl implements ContentService {
 		return E3Result.ok();
 	}
 
+	/**
+	 * 首页的广告
+	 */
 	@Override
 	public List<TbContent> getContentsByCategoryId(Long categoryId) {
 
 		try {// 去redis缓存里读取数据
-			String redisString = jedisClient.hget("CONTENT_LIST_REDIS_HASHSET_KEY", categoryId.toString());
+			String redisString = jedisClient.hget(CONTENT_LIST_REDIS_HASHSET_KEY, categoryId.toString());
 			List<TbContent> redisList = JsonUtils.jsonToList(redisString, TbContent.class);
 			if (CollectionUtils.isNotEmpty(redisList)) {
 				return redisList;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			logger.info("去redis缓存里读取数据出错了.....");
 			System.out.println(JsonUtils.objectToJson(e));
 		}
-
+		logger.info("去redis缓存里没有数据,去数据库里读.....");
 		TbContentExample example = new TbContentExample();
 		Criteria criteria = example.createCriteria();
 		criteria.andCategoryIdEqualTo(categoryId);
 		List<TbContent> list = tbContentMapper.selectByExample(example);
 
 		try {// 去redis 写入缓存数据
-			jedisClient.hset("CONTENT_LIST_REDIS_HASHSET_KEY", categoryId.toString(), JsonUtils.objectToJson(list));
+			jedisClient.hset(CONTENT_LIST_REDIS_HASHSET_KEY, categoryId.toString(), JsonUtils.objectToJson(list));
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println(JsonUtils.objectToJson(e));
